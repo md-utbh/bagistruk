@@ -44,6 +44,10 @@ interface AppState {
   removeParticipant: (id: string) => void;
   toggleItemAssignee: (itemId: string, participantId: string) => void;
   toggleAllAssignees: (itemId: string, selectAll: boolean) => void;
+  initManualEntry: () => void;
+  addSplitItem: (item: Omit<SplitItem, "id" | "assignees">) => void;
+  removeSplitItem: (id: string) => void;
+  updateSplitItem: (id: string, updates: Partial<Omit<SplitItem, "id" | "assignees">>) => void;
   
   resetToLanding: () => void;
 }
@@ -143,6 +147,85 @@ export const useAppStore = create<AppState>((set) => ({
       };
     })
   })),
+
+  initManualEntry: () => set(() => {
+    const myId = `p-me`;
+    const initialParticipants: Participant[] = [{ id: myId, name: "Saya (Kamu)" }];
+    
+    // Create an empty receipt data shell
+    const emptyData: ReceiptData = {
+      is_valid_receipt: true,
+      error_reason: null,
+      document_type: "expense_receipt",
+      receipt_category: "Others",
+      store_name: "Input Manual",
+      date: new Date().toISOString().split("T")[0],
+      items: [],
+      financials: { discount: 0, tax: 0, service_fee: 0, grand_total: 0 },
+    };
+
+    return {
+      receiptData: emptyData,
+      splitMode: "split",
+      participants: initialParticipants,
+      splitItems: [],
+      currentView: "split-bill",
+      error: null,
+    };
+  }),
+
+  addSplitItem: (item) => set((state) => {
+    const newItem: SplitItem = {
+      ...item,
+      id: `item-manual-${Date.now()}`,
+      assignees: [],
+    };
+    
+    const newItems = [...state.splitItems, newItem];
+    const newGrandTotal = newItems.reduce((acc, curr) => acc + curr.subtotal, 0);
+    
+    return {
+      splitItems: newItems,
+      receiptData: state.receiptData ? {
+        ...state.receiptData,
+        financials: { ...state.receiptData.financials, grand_total: newGrandTotal }
+      } : null
+    };
+  }),
+
+  removeSplitItem: (id) => set((state) => {
+    const newItems = state.splitItems.filter((i) => i.id !== id);
+    const newGrandTotal = newItems.reduce((acc, curr) => acc + curr.subtotal, 0);
+    
+    return {
+      splitItems: newItems,
+      receiptData: state.receiptData ? {
+        ...state.receiptData,
+        financials: { ...state.receiptData.financials, grand_total: newGrandTotal }
+      } : null
+    };
+  }),
+
+  updateSplitItem: (id, updates) => set((state) => {
+    const newItems = state.splitItems.map((item) => {
+      if (item.id !== id) return item;
+      const updated = { ...item, ...updates };
+      if (updates.quantity !== undefined || updates.unit_price !== undefined) {
+        updated.subtotal = updated.quantity * updated.unit_price;
+      }
+      return updated;
+    });
+    
+    const newGrandTotal = newItems.reduce((acc, curr) => acc + curr.subtotal, 0);
+    
+    return {
+      splitItems: newItems,
+      receiptData: state.receiptData ? {
+        ...state.receiptData,
+        financials: { ...state.receiptData.financials, grand_total: newGrandTotal }
+      } : null
+    };
+  }),
 
   resetToLanding: () =>
     set({

@@ -24,6 +24,8 @@ export default function PreviewScreen() {
     setError,
     setReceiptData,
     setView,
+    error,
+    initManualEntry,
   } = useAppStore();
 
   const handleProcessClick = useCallback(async () => {
@@ -232,6 +234,21 @@ export default function PreviewScreen() {
               </div>
             </div>
           </div>
+
+          {/* Error Fallback */}
+          {error && (
+            <div className="mt-4 rounded-2xl p-4 bg-red-50 border border-red-200 animate-fade-in">
+              <p className="text-sm text-red-800 font-medium mb-3">
+                Server AI sedang penuh atau terjadi kesalahan. Ingin memasukkan data secara manual?
+              </p>
+              <button
+                onClick={initManualEntry}
+                className="w-full flex justify-center py-2.5 bg-red-600 text-white text-sm font-semibold rounded-xl active:scale-95 transition-all shadow-sm"
+              >
+                Input Manual
+              </button>
+            </div>
+          )}
         </div>
       </main>
 

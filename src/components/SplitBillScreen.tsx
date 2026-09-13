@@ -37,12 +37,20 @@ export default function SplitBillScreen() {
     toggleItemAssignee,
     toggleAllAssignees,
     setView,
+    addSplitItem,
+    removeSplitItem,
   } = useAppStore();
 
   const [newParticipantName, setNewParticipantName] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("Teks disalin ke clipboard!");
   const [isSaving, setIsSaving] = useState(false);
+  
+  // States for new item form
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemQty, setNewItemQty] = useState(1);
+  const [newItemPrice, setNewItemPrice] = useState("");
 
   const handleBack = useCallback(() => {
     setView("result");
@@ -280,9 +288,14 @@ export default function SplitBillScreen() {
                           {item.quantity}x @ {formatRupiah(item.unit_price)}
                         </p>
                       </div>
-                      <p className="font-semibold text-sm" style={{ color: "var(--primary)" }}>
-                        {formatRupiah(item.subtotal)}
-                      </p>
+                      <div className="flex flex-col items-end gap-1">
+                        <p className="font-semibold text-sm" style={{ color: "var(--primary)" }}>
+                          {formatRupiah(item.subtotal)}
+                        </p>
+                        <button onClick={() => removeSplitItem(item.id)} className="text-red-400 hover:text-red-500 p-0.5 transition-colors" title="Hapus item">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Horizontal Scrollable Assignees */}
@@ -326,6 +339,88 @@ export default function SplitBillScreen() {
                   </div>
                 );
               })}
+
+              {/* Add Item Form */}
+              {isAddingItem ? (
+                <div className="rounded-2xl p-4 animate-fade-in" style={{ background: "var(--surface)", border: "1px solid var(--primary-light)", boxShadow: "0 2px 10px rgba(16, 153, 129, 0.1)" }}>
+                  <p className="text-xs font-semibold mb-3" style={{ color: "var(--primary)" }}>Item Baru</p>
+                  <input
+                    type="text"
+                    placeholder="Nama makanan/minuman"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    className="w-full mb-3 p-2.5 text-sm rounded-xl outline-none"
+                    style={{ background: "var(--background)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                  />
+                  <div className="flex gap-2 mb-2">
+                    <div className="flex-1">
+                      <label className="text-[10px] text-gray-500 ml-1">Kuantitas</label>
+                      <input
+                        type="number"
+                        min="1"
+                        placeholder="Qty"
+                        value={newItemQty}
+                        onChange={(e) => setNewItemQty(parseInt(e.target.value) || 1)}
+                        className="w-full p-2.5 text-sm rounded-xl outline-none mt-1"
+                        style={{ background: "var(--background)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                      />
+                    </div>
+                    <div className="flex-[2]">
+                      <label className="text-[10px] text-gray-500 ml-1">Harga Satuan</label>
+                      <input
+                        type="number"
+                        placeholder="Rp 0"
+                        value={newItemPrice}
+                        onChange={(e) => setNewItemPrice(e.target.value)}
+                        className="w-full p-2.5 text-sm rounded-xl outline-none mt-1"
+                        style={{ background: "var(--background)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      onClick={() => setIsAddingItem(false)}
+                      className="px-4 py-2 text-xs font-medium rounded-xl text-gray-600 hover:bg-gray-100"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      onClick={() => {
+                        const name = newItemName.trim();
+                        const price = parseInt(newItemPrice) || 0;
+                        if (!name) return;
+                        
+                        addSplitItem({
+                          name: name,
+                          category: "Others",
+                          quantity: newItemQty,
+                          unit_price: price,
+                          subtotal: newItemQty * price,
+                        });
+                        
+                        setIsAddingItem(false);
+                        setNewItemName("");
+                        setNewItemPrice("");
+                        setNewItemQty(1);
+                      }}
+                      disabled={!newItemName.trim() || !newItemPrice}
+                      className="px-4 py-2 text-xs font-semibold rounded-xl text-white transition-all disabled:opacity-50"
+                      style={{ background: "linear-gradient(135deg, var(--primary), var(--primary-light))" }}
+                    >
+                      Tambah
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAddingItem(true)}
+                  className="w-full py-3.5 rounded-2xl border border-dashed text-sm font-medium flex items-center justify-center gap-2 transition-colors active:scale-[0.98]"
+                  style={{ borderColor: "var(--border)", color: "var(--text-muted)", background: "rgba(0,0,0,0.01)" }}
+                >
+                  <Plus size={16} />
+                  Tambah Item Baru
+                </button>
+              )}
             </div>
           </section>
           </>

@@ -10,7 +10,7 @@ import {
 import { useAppStore } from "@/store/app-store";
 
 export default function LandingPage() {
-  const { setBottomSheetOpen, isCompressing } = useAppStore();
+  const { setBottomSheetOpen, isCompressing, initManualEntry } = useAppStore();
 
   const handleScanClick = () => {
     setBottomSheetOpen(true);
@@ -86,6 +86,16 @@ export default function LandingPage() {
               <span>Scan Struk</span>
             </>
           )}
+        </button>
+
+        {/* Manual Entry Button */}
+        <button
+          onClick={initManualEntry}
+          disabled={isCompressing}
+          className="mt-4 px-6 py-2.5 text-sm font-semibold transition-all active:scale-95 disabled:opacity-50"
+          style={{ color: "var(--primary)" }}
+        >
+          Ketik Manual Saja
         </button>
 
         {/* Scroll indicator */}
