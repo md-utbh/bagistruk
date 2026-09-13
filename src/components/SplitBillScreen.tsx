@@ -129,7 +129,11 @@ export default function SplitBillScreen() {
       if (result.success) {
         setToastMessage("Data berhasil disimpan ke database!");
         setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+        setTimeout(() => {
+          setShowToast(false);
+          // Redirect to dashboard instead of just staying on the page
+          window.location.href = "/dashboard";
+        }, 1500);
       } else {
         alert(result.error || "Gagal menyimpan data.");
       }
