@@ -1,0 +1,276 @@
+ import google.generativeai as genai
+Nama Model       : models/gemini-2.5-flash
+Nama Tampilan    : Gemini 2.5 Flash
+Deskripsi        : Stable version of Gemini 2.5 Flash, our mid-size multimodal model that supports up to 1 million tokens, released in June of 2025.
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-pro
+Nama Tampilan    : Gemini 2.5 Pro
+Deskripsi        : Stable release (June 17th, 2025) of Gemini 2.5 Pro
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-flash-preview-tts
+Nama Tampilan    : Gemini 2.5 Flash Preview TTS
+Deskripsi        : Gemini 2.5 Flash Preview TTS
+Metode yang Didukung: ['countTokens', 'generateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-pro-preview-tts
+Nama Tampilan    : Gemini 2.5 Pro Preview TTS
+Deskripsi        : Gemini 2.5 Pro Preview TTS
+Metode yang Didukung: ['countTokens', 'generateContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemma-4-26b-a4b-it
+Nama Tampilan    : Gemma 4 26B A4B IT
+Deskripsi        : Gemma 4 26B A4B IT
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/gemma-4-31b-it
+Nama Tampilan    : Gemma 4 31B IT
+Deskripsi        : Gemma 4 31B IT
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/gemini-flash-latest
+Nama Tampilan    : Gemini Flash Latest
+Deskripsi        : Latest release of Gemini Flash
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-flash-lite-latest
+Nama Tampilan    : Gemini Flash-Lite Latest
+Deskripsi        : Latest release of Gemini Flash-Lite
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-pro-latest
+Nama Tampilan    : Gemini Pro Latest
+Deskripsi        : Latest release of Gemini Pro
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-flash-lite
+Nama Tampilan    : Gemini 2.5 Flash-Lite
+Deskripsi        : Stable version of Gemini 2.5 Flash-Lite, released in July of 2025
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-flash-image
+Nama Tampilan    : Nano Banana
+Deskripsi        : Gemini 2.5 Flash Preview Image
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3-flash-preview
+Nama Tampilan    : Gemini 3 Flash Preview
+Deskripsi        : Gemini 3 Flash Preview
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-pro-preview
+Nama Tampilan    : Gemini 3.1 Pro Preview
+Deskripsi        : Gemini 3.1 Pro Preview
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-pro-preview-customtools
+Nama Tampilan    : Gemini 3.1 Pro Preview Custom Tools
+Deskripsi        : Gemini 3.1 Pro Preview optimized for custom tool usage
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-flash-lite-preview
+Nama Tampilan    : Gemini 3.1 Flash Lite Preview
+Deskripsi        : Gemini 3.1 Flash Lite Preview
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-flash-lite
+Nama Tampilan    : Gemini 3.1 Flash Lite
+Deskripsi        : Gemini 3.1 Flash Lite
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3-pro-image-preview
+Nama Tampilan    : Nano Banana Pro
+Deskripsi        : Gemini 3 Pro Image Preview
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3-pro-image
+Nama Tampilan    : Nano Banana Pro
+Deskripsi        : Gemini 3 Pro Image
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/nano-banana-pro-preview
+Nama Tampilan    : Nano Banana Pro
+Deskripsi        : Gemini 3 Pro Image Preview
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-flash-image-preview
+Nama Tampilan    : Nano Banana 2
+Deskripsi        : Gemini 3.1 Flash Image Preview.
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-flash-image
+Nama Tampilan    : Nano Banana 2
+Deskripsi        : Gemini 3.1 Flash Image.
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-flash-lite-image
+Nama Tampilan    : Nano Banana 2 Lite
+Deskripsi        : Gemini 3.1 Flash Lite Image.
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.5-flash
+Nama Tampilan    : Gemini 3.5 Flash
+Deskripsi        : Gemini 3.5 Flash
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.5-flash-lite
+Nama Tampilan    : Gemini 3.5 Flash Lite
+Deskripsi        : Gemini 3.5 Flash Lite
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-omni-flash-preview
+Nama Tampilan    : Gemini Omni Flash Preview
+Deskripsi        : Gemini Omni Flash Preview
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/gemini-omni-1.1-flash
+Nama Tampilan    : Gemini Omni 1.1 Flash
+Deskripsi        : Gemini Omni 1.1 Flash 
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/gemini-3.5-transcribe
+Nama Tampilan    : Gemini 3.5 Transcribe
+Deskripsi        : Gemini 3.5 Transcribe
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/gemini-3.6-flash
+Nama Tampilan    : Gemini 3.6 Flash
+Deskripsi        : Gemini 3.6 Flash
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.7-flash
+Nama Tampilan    : Gemini 3.7 Flash
+Deskripsi        : Gemini 3.7 Flash
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.8-flash
+Nama Tampilan    : Gemini 3.8 Flash
+Deskripsi        : Gemini 3.8 Flash
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/lyria-3-clip-preview
+Nama Tampilan    : Lyria 3 Clip Preview
+Deskripsi        : Lyria 3 30s model Preview
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/lyria-3-pro-preview
+Nama Tampilan    : Lyria 3 Pro Preview
+Deskripsi        : Lyria 3 Pro Preview
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/lyria-3.5
+Nama Tampilan    : Lyria 3.5
+Deskripsi        : Music Generation model
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-flash-tts-preview
+Nama Tampilan    : Gemini 3.1 Flash TTS Preview
+Deskripsi        : Gemini 3.1 Flash TTS Preview
+Metode yang Didukung: ['generateContent', 'countTokens', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-robotics-er-2-preview
+Nama Tampilan    : Gemini Robotics-ER 2 Preview
+Deskripsi        : Gemini Robotics-ER 2 Preview
+Metode yang Didukung: ['generateContent', 'countTokens', 'createCachedContent', 'batchGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-computer-use-preview-10-2025
+Nama Tampilan    : Gemini 2.5 Computer Use Preview 10-2025
+Deskripsi        : Gemini 2.5 Computer Use Preview 10-2025
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/antigravity-preview-05-2026
+Nama Tampilan    : Antigravity Agent Preview
+Deskripsi        : Preview release of Antigravity Agent (05-2026)
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/deep-research-max-preview-04-2026
+Nama Tampilan    : Deep Research Max Preview (Apr-21-2026)
+Deskripsi        : Preview release (April 21st, 2026) of Deep Research Max
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/deep-research-preview-04-2026
+Nama Tampilan    : Deep Research Preview (Apr-21-2026)
+Deskripsi        : Preview release (April 21th, 2026) of Deep Research
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/deep-research-pro-preview-12-2025
+Nama Tampilan    : Deep Research Pro Preview (Dec-12-2025)
+Deskripsi        : Preview release (December 12th, 2025) of Deep Research Pro
+Metode yang Didukung: ['generateContent', 'countTokens']
+--------------------------------------------------
+Nama Model       : models/gemini-embedding-001
+Nama Tampilan    : Gemini Embedding 001
+Deskripsi        : Obtain a distributed representation of a text.
+Metode yang Didukung: ['embedContent', 'countTextTokens', 'countTokens', 'asyncBatchEmbedContent']
+--------------------------------------------------
+Nama Model       : models/gemini-embedding-2-preview
+Nama Tampilan    : Gemini Embedding 2 Preview
+Deskripsi        : Obtain a distributed representation of multimodal content.
+Metode yang Didukung: ['embedContent', 'countTextTokens', 'countTokens', 'asyncBatchEmbedContent']
+--------------------------------------------------
+Nama Model       : models/gemini-embedding-2
+Nama Tampilan    : Gemini Embedding 2
+Deskripsi        : Obtain a distributed representation of multimodal content.
+Metode yang Didukung: ['embedContent', 'countTextTokens', 'countTokens', 'asyncBatchEmbedContent']
+--------------------------------------------------
+Nama Model       : models/aqa
+Nama Tampilan    : Model that performs Attributed Question Answering.
+Deskripsi        : Model trained to return answers to questions that are grounded in provided sources, along with estimating answerable probability.
+Metode yang Didukung: ['generateAnswer']
+--------------------------------------------------
+Nama Model       : models/veo-3.1-generate-preview
+Nama Tampilan    : Veo 3.1
+Deskripsi        : Veo 3.1
+Metode yang Didukung: ['predictLongRunning']
+--------------------------------------------------
+Nama Model       : models/veo-3.1-fast-generate-preview
+Nama Tampilan    : Veo 3.1 fast
+Deskripsi        : Veo 3.1 fast
+Metode yang Didukung: ['predictLongRunning']
+--------------------------------------------------
+Nama Model       : models/veo-3.1-lite-generate-preview
+Nama Tampilan    : Veo 3.1 lite
+Deskripsi        : Veo 3.1 lite
+Metode yang Didukung: ['predictLongRunning']
+--------------------------------------------------
+Nama Model       : models/gemini-3.5-transcribe-live
+Nama Tampilan    : Gemini 3.5 Transcribe Live
+Deskripsi        : Gemini 3.5 Transcribe Live
+Metode yang Didukung: ['bidiGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-flash-native-audio-latest
+Nama Tampilan    : Gemini 2.5 Flash Native Audio Latest
+Deskripsi        : Latest release of Gemini 2.5 Flash Native Audio
+Metode yang Didukung: ['countTokens', 'bidiGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-flash-native-audio-preview-09-2025
+Nama Tampilan    : Gemini 2.5 Flash Native Audio Preview 09-2025
+Deskripsi        : Gemini 2.5 Flash Native Audio Preview 09-2025
+Metode yang Didukung: ['countTokens', 'bidiGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-2.5-flash-native-audio-preview-12-2025
+Nama Tampilan    : Gemini 2.5 Flash Native Audio Preview 12-2025
+Deskripsi        : Gemini 2.5 Flash Native Audio Preview 12-2025
+Metode yang Didukung: ['countTokens', 'bidiGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.1-flash-live-preview
+Nama Tampilan    : Gemini 3.1 Flash Live Preview
+Deskripsi        : Gemini 3.1 Flash Live Preview
+Metode yang Didukung: ['bidiGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-robotics-er-2-streaming-preview
+Nama Tampilan    : Gemini Robotics-ER 2 Streaming Preview
+Deskripsi        : Gemini Robotics-ER 2 Streaming Preview
+Metode yang Didukung: ['bidiGenerateContent']
+--------------------------------------------------
+Nama Model       : models/gemini-3.5-live-translate-preview
+Nama Tampilan    : Gemini 3.5 Live Translate Preview
+Deskripsi        : Gemini 3.5 Live Translate Preview
+Metode yang Didukung: ['bidiGenerateContent']
+--------------------------------------------------
+Nama Model       : models/lyria-realtime-exp
+Nama Tampilan    : Lyria Realtime Experimental
+Deskripsi        : Lyria Realtime Experimental
+Metode yang Didukung: ['bidiGenerateMusic']
+--------------------------------------------------

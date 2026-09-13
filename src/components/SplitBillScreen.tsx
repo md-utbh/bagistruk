@@ -1,0 +1,431 @@
+"use client";
+
+import { useState, useCallback, useMemo } from "react";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Check,
+  Users,
+  CheckCircle2,
+  Copy,
+  Save,
+  Loader2,
+} from "lucide-react";
+import { useAppStore } from "@/store/app-store";
+import { calculateSplit } from "@/lib/split-math";
+import { saveTransactionData } from "@/app/actions/finance";
+
+/** Formats a number as Indonesian Rupiah */
+function formatRupiah(value: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+export default function SplitBillScreen() {
+  const {
+    receiptData,
+    splitMode,
+    participants,
+    splitItems,
+    addParticipant,
+    removeParticipant,
+    toggleItemAssignee,
+    toggleAllAssignees,
+    setView,
+  } = useAppStore();
+
+  const [newParticipantName, setNewParticipantName] = useState("");
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("Teks disalin ke clipboard!");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleBack = useCallback(() => {
+    setView("result");
+  }, [setView]);
+
+  const handleAddParticipant = useCallback(() => {
+    const trimmed = newParticipantName.trim();
+    if (trimmed) {
+      addParticipant(trimmed);
+      setNewParticipantName("");
+    }
+  }, [newParticipantName, addParticipant]);
+
+  const splitResults = useMemo(() => {
+    if (!receiptData) return [];
+    return calculateSplit(splitItems, receiptData.financials, participants);
+  }, [receiptData, splitItems, participants]);
+
+  const handleCopyToWhatsApp = useCallback(() => {
+    if (!receiptData || splitResults.length === 0) return;
+    
+    let text = `*Tagihan ${receiptData.store_name}*\n`;
+    text += `Tanggal: ${receiptData.date}\n\n`;
+    
+    if (splitMode === "split") {
+      text += `Rincian per orang:\n`;
+      splitResults.forEach((result) => {
+        text += `• *${result.name}*: ${formatRupiah(result.total)}\n`;
+      });
+    } else {
+      text += `Total Pengeluaran: *${formatRupiah(splitResults[0].total)}*\n`;
+    }
+    
+    text += `\n*Grand Total:* ${formatRupiah(receiptData.financials.grand_total)}\n`;
+    text += `\n_Dibuat dengan BagiStruk_ 🧾✨`;
+
+    const copyFallback = (textToCopy: string) => {
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        // Move element out of screen visually
+        textArea.style.position = "absolute";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        return Promise.resolve();
+      } catch (err) {
+        return Promise.reject(err);
+      }
+    };
+
+    const copyPromise = navigator.clipboard && navigator.clipboard.writeText
+      ? navigator.clipboard.writeText(text)
+      : copyFallback(text);
+
+    copyPromise
+      .then(() => {
+        setToastMessage("Teks disalin ke clipboard!");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      })
+      .catch((err) => {
+        console.error("Gagal menyalin teks:", err);
+        alert("Gagal menyalin teks. Browser Anda mungkin tidak mendukung fitur ini.");
+      });
+  }, [receiptData, splitResults, splitMode]);
+
+  const handleSave = useCallback(async () => {
+    if (!receiptData || !splitMode) return;
+    
+    setIsSaving(true);
+    try {
+      const result = await saveTransactionData(receiptData, splitMode, splitResults);
+      if (result.success) {
+        setToastMessage("Data berhasil disimpan ke database!");
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 3000);
+      } else {
+        alert(result.error || "Gagal menyimpan data.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Terjadi kesalahan.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [receiptData, splitMode, splitResults]);
+
+  if (!receiptData) return null;
+
+  return (
+    <div
+      className="flex min-h-dvh flex-col"
+      style={{ background: "var(--background)" }}
+    >
+      {/* Header */}
+      <header
+        className="sticky top-0 z-30 flex items-center gap-3 px-4 py-3"
+        style={{
+          background: "rgba(248, 250, 249, 0.85)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid var(--border-light)",
+        }}
+      >
+        <button
+          onClick={handleBack}
+          className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-200 active:scale-95"
+          style={{ background: "var(--accent)" }}
+          aria-label="Kembali"
+        >
+          <ArrowLeft size={20} style={{ color: "var(--primary)" }} />
+        </button>
+        <div className="flex-1">
+          <h1
+            className="text-base font-semibold"
+            style={{ color: "var(--text-primary)" }}
+          >
+            Split Bill
+          </h1>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+            Bagi tagihan ke teman-teman
+          </p>
+        </div>
+      </header>
+
+      <main className="flex-1 px-4 py-5">
+        <div className="mx-auto max-w-md space-y-6">
+          
+          {/* Bagian 1 & 2 hanya untuk Mode Split */}
+          {splitMode === "split" && (
+            <>
+              {/* Bagian 1: Partisipan */}
+              <section>
+            <div className="mb-3 flex items-center gap-2">
+              <Users size={16} style={{ color: "var(--primary)" }} />
+              <h2
+                className="text-sm font-semibold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Siapa Saja yang Ikut?
+              </h2>
+            </div>
+            
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newParticipantName}
+                onChange={(e) => setNewParticipantName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddParticipant()}
+                placeholder="Masukkan nama..."
+                className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none transition-all focus:ring-2"
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text-primary)",
+                  "--tw-ring-color": "var(--primary-light)",
+                } as any}
+              />
+              <button
+                onClick={handleAddParticipant}
+                disabled={!newParticipantName.trim()}
+                className="flex h-[42px] w-[42px] items-center justify-center rounded-xl text-white transition-all active:scale-95 disabled:opacity-50"
+                style={{
+                  background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+                }}
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+
+            {participants.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {participants.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center gap-2 rounded-full px-3 py-1.5 text-sm"
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border)",
+                      color: "var(--text-primary)",
+                    }}
+                  >
+                    <span>{p.name}</span>
+                    {p.id !== "p-me" && (
+                      <button
+                        onClick={() => removeParticipant(p.id)}
+                        className="ml-1 text-gray-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {participants.length === 0 && (
+              <p className="text-xs text-center p-3 rounded-xl border border-dashed" style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}>
+                Belum ada teman yang ditambahkan.
+              </p>
+            )}
+          </section>
+
+          {/* Bagian 2: Rincian Item & Penugasan */}
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h2
+                className="text-sm font-semibold"
+                style={{ color: "var(--text-primary)" }}
+              >
+                Bagikan Item
+              </h2>
+            </div>
+            
+            <div className="space-y-4">
+              {splitItems.map((item) => {
+                const allSelected = participants.length > 0 && item.assignees.length === participants.length;
+                
+                return (
+                  <div
+                    key={item.id}
+                    className="rounded-2xl p-4 transition-all"
+                    style={{
+                      background: "var(--surface)",
+                      border: "1px solid var(--border-light)",
+                      boxShadow: "var(--shadow-sm)",
+                    }}
+                  >
+                    {/* Item Info */}
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <p className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>{item.name}</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                          {item.quantity}x @ {formatRupiah(item.unit_price)}
+                        </p>
+                      </div>
+                      <p className="font-semibold text-sm" style={{ color: "var(--primary)" }}>
+                        {formatRupiah(item.subtotal)}
+                      </p>
+                    </div>
+
+                    {/* Horizontal Scrollable Assignees */}
+                    {participants.length > 0 && (
+                      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
+                        {/* Select All Chip */}
+                        <button
+                          onClick={() => toggleAllAssignees(item.id, !allSelected)}
+                          className={`flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors border ${
+                            allSelected
+                              ? "bg-blue-600 border-blue-600 text-white"
+                              : "bg-transparent border-gray-200 text-gray-500"
+                          }`}
+                        >
+                          {allSelected && <Check size={12} strokeWidth={3} />}
+                          Semua
+                        </button>
+
+                        <div className="w-px h-5 bg-gray-200 shrink-0 mx-1" />
+
+                        {/* Participant Chips */}
+                        {participants.map((p) => {
+                          const isActive = item.assignees.includes(p.id);
+                          return (
+                            <button
+                              key={p.id}
+                              onClick={() => toggleItemAssignee(item.id, p.id)}
+                              className={`flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all border ${
+                                isActive
+                                  ? "bg-blue-600 border-blue-600 text-white"
+                                  : "bg-transparent border-gray-200 text-gray-500"
+                              }`}
+                            >
+                              {isActive && <Check size={12} strokeWidth={3} />}
+                              {p.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+          </>
+          )}
+
+          {/* Bagian 3: Hasil Pembagian */}
+          {participants.length > 0 && (
+            <section>
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} style={{ color: "var(--success)" }} />
+                  <h2
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Ringkasan Tagihan
+                  </h2>
+                </div>
+                <span className="text-xs font-bold" style={{ color: "var(--primary)" }}>
+                  {formatRupiah(receiptData.financials.grand_total)}
+                </span>
+              </div>
+
+              <div
+                className="rounded-2xl overflow-hidden"
+                style={{
+                  border: "1px solid var(--border-light)",
+                  boxShadow: "var(--shadow-sm)",
+                  background: "var(--surface)",
+                }}
+              >
+                {splitResults.length > 0 ? (
+                  splitResults.map((result, idx) => (
+                    <div
+                      key={result.participantId}
+                      className="flex items-center justify-between p-4"
+                      style={{
+                        borderBottom: idx < splitResults.length - 1 ? "1px solid var(--border-light)" : "none",
+                      }}
+                    >
+                      <div>
+                        <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{result.name}</p>
+                        <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                          {result.items.length} item(s)
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-[15px]" style={{ color: "var(--primary-dark)" }}>
+                          {formatRupiah(result.total)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+                    Silakan bagikan item terlebih dahulu.
+                  </div>
+                )}
+              </div>
+              
+              <div className="mt-6 flex flex-col gap-3">
+                <button
+                  onClick={handleCopyToWhatsApp}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold text-white transition-all active:scale-[0.98]"
+                  style={{
+                    background: "linear-gradient(135deg, #25D366, #128C7E)",
+                    boxShadow: "0 4px 15px rgba(37, 211, 102, 0.3)",
+                  }}
+                >
+                  <Copy size={18} />
+                  Salin ke WhatsApp
+                </button>
+
+                <button
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold transition-all active:scale-[0.98] disabled:opacity-70"
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--primary)",
+                    color: "var(--primary-dark)",
+                  }}
+                >
+                  {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
+                  {isSaving ? "Menyimpan..." : "Simpan ke Database"}
+                </button>
+              </div>
+            </section>
+          )}
+
+        </div>
+      </main>
+
+      {/* Toast Notification */}
+      {showToast && (
+        <div className="fixed bottom-10 left-1/2 z-50 -translate-x-1/2 animate-slide-up rounded-full bg-gray-800 px-5 py-2.5 text-sm text-white shadow-lg flex items-center gap-2 whitespace-nowrap">
+          <CheckCircle2 size={16} className="text-green-400" />
+          {toastMessage}
+        </div>
+      )}
+    </div>
+  );
+}
