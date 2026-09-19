@@ -3,11 +3,10 @@
 import { useState, useCallback, useRef } from "react";
 import {
   Home,
-  Wallet,
-  Users,
-  HandCoins,
-  UserCircle,
   ScanLine,
+  UserCircle,
+  Users,
+  Wallet,
   Camera,
   ImageIcon,
   X,
@@ -170,55 +169,138 @@ export default function DashboardShell({
             </div>
           </main>
 
-          {/* Scan Menu Popup (rendered conditionally above navbar) */}
+          {/* Scan Menu Bottom Sheet */}
           {showScanMenu && (
-            <div className="fixed bottom-[76px] left-1/2 z-50 -translate-x-1/2">
+            <div className="fixed inset-0 z-50 flex flex-col justify-end">
               {/* Backdrop */}
               <div
-                className="fixed inset-0 z-40"
+                className="absolute inset-0 animate-fade-in"
+                style={{ background: "var(--overlay)" }}
                 onClick={() => setShowScanMenu(false)}
               />
-              {/* Menu */}
+              
+              {/* Bottom Sheet */}
               <div
-                className="absolute bottom-4 left-1/2 z-50 -translate-x-1/2 flex flex-col gap-2 rounded-2xl p-3 animate-scale-in"
+                className="relative z-50 w-full animate-slide-up rounded-t-3xl px-6 pt-4 pb-8"
                 style={{
                   background: "var(--surface)",
-                  boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
-                  border: "1px solid var(--border-light)",
-                  minWidth: "180px",
+                  boxShadow: "0 -10px 40px rgba(0, 0, 0, 0.12)",
                 }}
               >
-                <button
-                  onClick={() => {
-                    cameraInputRef.current?.click();
-                  }}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  <Camera size={18} style={{ color: "var(--primary)" }} />
-                  Ambil Foto
-                </button>
-                <button
-                  onClick={() => {
-                    galleryInputRef.current?.click();
-                  }}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
-                  style={{ color: "var(--text-primary)" }}
-                >
-                  <ImageIcon size={18} style={{ color: "var(--secondary)" }} />
-                  Pilih dari Galeri
-                </button>
-                <div className="h-px my-1" style={{ background: "var(--border-light)" }} />
+                {/* Drag handle */}
+                <div className="bottom-sheet-handle mb-6 mx-auto" />
+
+                {/* Header */}
+                <div className="mb-6 flex items-center justify-between">
+                  <h2
+                    className="text-lg font-semibold"
+                    style={{ color: "var(--text-primary)" }}
+                  >
+                    Pilih Sumber Gambar
+                  </h2>
+                  <button
+                    onClick={() => setShowScanMenu(false)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full transition-colors duration-200 active:scale-95"
+                    style={{ background: "var(--border-light)" }}
+                    aria-label="Tutup"
+                  >
+                    <X size={18} style={{ color: "var(--text-secondary)" }} />
+                  </button>
+                </div>
+
+                {/* Options Row 1 */}
+                <div className="flex gap-4 mb-4">
+                  {/* Camera Option */}
+                  <button
+                    onClick={() => {
+                      cameraInputRef.current?.click();
+                      setShowScanMenu(false);
+                    }}
+                    className="flex flex-1 flex-col items-center gap-3 rounded-2xl p-5 transition-all duration-200 active:scale-[0.97]"
+                    style={{
+                      background: "var(--accent)",
+                      border: "2px solid transparent",
+                    }}
+                  >
+                    <div
+                      className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                      style={{
+                        background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
+                        boxShadow: "0 4px 12px rgba(16, 153, 129, 0.3)",
+                      }}
+                    >
+                      <Camera size={26} color="white" strokeWidth={2} />
+                    </div>
+                    <div className="text-center">
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        Ambil Foto
+                      </p>
+                      <p
+                        className="mt-0.5 text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Gunakan kamera
+                      </p>
+                    </div>
+                  </button>
+
+                  {/* Gallery Option */}
+                  <button
+                    onClick={() => {
+                      galleryInputRef.current?.click();
+                      setShowScanMenu(false);
+                    }}
+                    className="flex flex-1 flex-col items-center gap-3 rounded-2xl p-5 transition-all duration-200 active:scale-[0.97]"
+                    style={{
+                      background: "var(--accent)",
+                      border: "2px solid transparent",
+                    }}
+                  >
+                    <div
+                      className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                      style={{
+                        background: "linear-gradient(135deg, var(--secondary), var(--primary))",
+                        boxShadow: "0 4px 12px rgba(5, 150, 105, 0.3)",
+                      }}
+                    >
+                      <ImageIcon size={26} color="white" strokeWidth={2} />
+                    </div>
+                    <div className="text-center">
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: "var(--text-primary)" }}
+                      >
+                        Pilih dari Galeri
+                      </p>
+                      <p
+                        className="mt-0.5 text-xs"
+                        style={{ color: "var(--text-secondary)" }}
+                      >
+                        Pilih file gambar
+                      </p>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Option Row 2: Manual Input */}
                 <button
                   onClick={() => {
                     setShowScanMenu(false);
                     initManualEntry();
                   }}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
-                  style={{ color: "var(--text-secondary)" }}
+                  className="flex w-full items-center justify-center gap-3 rounded-2xl p-4 transition-all duration-200 active:scale-[0.98]"
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                  }}
                 >
-                  <span className="text-base">✍️</span>
-                  Input Manual
+                  <span className="text-lg">✍️</span>
+                  <p className="text-sm font-semibold" style={{ color: "var(--text-secondary)" }}>
+                    Input Manual
+                  </p>
                 </button>
               </div>
             </div>

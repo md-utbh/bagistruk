@@ -10,24 +10,31 @@ export default function TransactionsTab() {
   return (
     <div className="space-y-4">
       {/* Sub-tab Navigation */}
-      <div className="flex rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
+      <div 
+        className="flex rounded-xl p-1"
+        style={{ background: "var(--border-light)" }}
+      >
         <button
           onClick={() => setSubTab("expenses")}
           className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-all ${
-            subTab === "expenses"
-              ? "bg-white text-[var(--primary)] shadow-sm dark:bg-[var(--surface)]"
-              : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+            subTab === "expenses" ? "shadow-sm" : ""
           }`}
+          style={{
+            background: subTab === "expenses" ? "var(--surface)" : "transparent",
+            color: subTab === "expenses" ? "var(--primary)" : "var(--text-muted)"
+          }}
         >
           Pengeluaran
         </button>
         <button
           onClick={() => setSubTab("debts")}
           className={`flex-1 rounded-lg py-2 text-sm font-semibold transition-all ${
-            subTab === "debts"
-              ? "bg-white text-[var(--primary)] shadow-sm dark:bg-[var(--surface)]"
-              : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+            subTab === "debts" ? "shadow-sm" : ""
           }`}
+          style={{
+            background: subTab === "debts" ? "var(--surface)" : "transparent",
+            color: subTab === "debts" ? "var(--primary)" : "var(--text-muted)"
+          }}
         >
           Uang Nyangkut
         </button>
