@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Pencil,
 } from "lucide-react";
+import Image from "next/image";
 import { useDashboard } from "@/app/dashboard/DashboardShell";
 import { signOut } from "@/app/actions/auth";
 import { createClient } from "@/lib/supabase/client";
@@ -20,10 +21,6 @@ import { createClient } from "@/lib/supabase/client";
 export default function ProfileTab() {
   const { userEmail } = useDashboard();
   const username = userEmail.split("@")[0];
-
-  const [displayName, setDisplayName] = useState(username);
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [tempName, setTempName] = useState(displayName);
 
   // Theme state
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -52,30 +49,11 @@ export default function ProfileTab() {
     }
   }, []);
 
-  // Load saved display name
-  useEffect(() => {
-    const savedName = localStorage.getItem("bagistruk-display-name");
-    if (savedName) {
-      setDisplayName(savedName);
-      setTempName(savedName);
-    }
-  }, []);
-
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     localStorage.setItem("bagistruk-theme", newTheme);
     document.documentElement.setAttribute("data-theme", newTheme);
-  };
-
-  const handleSaveName = () => {
-    const name = tempName.trim();
-    if (name) {
-      setDisplayName(name);
-      localStorage.setItem("bagistruk-display-name", name);
-      setIsEditingName(false);
-      showFeedback("Nama berhasil diubah!");
-    }
   };
 
   const handleResetData = async () => {
@@ -133,46 +111,11 @@ export default function ProfileTab() {
           <UserCircle size={36} style={{ color: "var(--primary)" }} />
         </div>
 
-        {isEditingName ? (
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <input
-              type="text"
-              value={tempName}
-              onChange={(e) => setTempName(e.target.value)}
-              className="text-center text-base font-bold px-3 py-1 rounded-lg outline-none"
-              style={{
-                background: "var(--background)",
-                border: "1px solid var(--primary)",
-                color: "var(--text-primary)",
-                maxWidth: "180px",
-              }}
-              autoFocus
-              onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
-            />
-            <button
-              onClick={handleSaveName}
-              className="text-xs font-semibold px-2 py-1 rounded-lg"
-              style={{ color: "var(--primary)" }}
-            >
-              Simpan
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-center gap-2 mb-1">
-            <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
-              {displayName}
-            </h2>
-            <button
-              onClick={() => {
-                setTempName(displayName);
-                setIsEditingName(true);
-              }}
-              className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Pencil size={14} style={{ color: "var(--text-muted)" }} />
-            </button>
-          </div>
-        )}
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <h2 className="text-base font-bold" style={{ color: "var(--text-primary)" }}>
+            @{username}
+          </h2>
+        </div>
 
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           {userEmail}
@@ -359,6 +302,13 @@ export default function ProfileTab() {
           {toastMsg}
         </div>
       )}
+
+      {/* TCC Logos Footer */}
+      <div className="pt-8 pb-4 flex items-center justify-center gap-6 opacity-60 grayscale">
+        <Image src="/images/logo2.png" alt="TCC Logo 1" width={40} height={40} className="h-10 w-auto object-contain" />
+        <Image src="/images/logo3.png" alt="TCC Logo 2" width={40} height={40} className="h-10 w-auto object-contain" />
+        <Image src="/images/logo4.png" alt="TCC Logo 3" width={40} height={40} className="h-10 w-auto object-contain" />
+      </div>
     </div>
   );
 }

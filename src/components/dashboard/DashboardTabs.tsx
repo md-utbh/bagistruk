@@ -2,9 +2,8 @@
 
 import { useDashboard } from "@/app/dashboard/DashboardShell";
 import HomeTab from "./HomeTab";
-import ExpensesTab from "./ExpensesTab";
+import TransactionsTab from "./TransactionsTab";
 import ContactsTab from "./ContactsTab";
-import DebtsTab from "./DebtsTab";
 import ProfileTab from "./ProfileTab";
 
 /**
@@ -16,12 +15,10 @@ export default function DashboardTabs() {
   switch (activeTab) {
     case "home":
       return <HomeTab />;
-    case "expenses":
-      return <ExpensesTab />;
+    case "transactions":
+      return <TransactionsTab />;
     case "contacts":
       return <ContactsTab />;
-    case "debts":
-      return <DebtsTab />;
     case "profile":
       return <ProfileTab />;
     default:

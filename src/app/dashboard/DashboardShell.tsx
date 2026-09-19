@@ -19,9 +19,10 @@ import ResultScreen from "@/components/ResultScreen";
 import SplitBillScreen from "@/components/SplitBillScreen";
 import BottomSheet from "@/components/BottomSheet";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import Image from "next/image";
 import ErrorToast from "@/components/ErrorToast";
 
-export type DashboardTab = "home" | "expenses" | "contacts" | "debts" | "profile";
+export type DashboardTab = "home" | "transactions" | "contacts" | "profile";
 
 interface DashboardShellProps {
   /** The user's email for greeting */
@@ -37,11 +38,11 @@ interface DashboardShellProps {
   };
 }
 
-const TAB_CONFIG: { id: DashboardTab; label: string; icon: typeof Home }[] = [
+const TAB_CONFIG: { id: DashboardTab | "scan"; label: string; icon: any }[] = [
   { id: "home", label: "Home", icon: Home },
-  { id: "expenses", label: "Pengeluaran", icon: Wallet },
+  { id: "transactions", label: "Transaksi", icon: Wallet },
+  { id: "scan", label: "Scan", icon: ScanLine },
   { id: "contacts", label: "Kontak", icon: Users },
-  { id: "debts", label: "Nyangkut", icon: HandCoins },
   { id: "profile", label: "Profil", icon: UserCircle },
 ];
 
@@ -128,20 +129,28 @@ export default function DashboardShell({
         <>
           {/* Header */}
           <header
-            className="sticky top-0 z-30 px-4 py-4"
+            className="sticky top-0 z-30 px-4 py-4 flex items-center justify-between"
             style={{
               background: "var(--glass-bg)",
               backdropFilter: "blur(12px)",
               borderBottom: "1px solid var(--border-light)",
             }}
           >
-            <div className="mx-auto max-w-md">
-              <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
-                Selamat datang, 👋
-              </p>
-              <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
-                @{username}
-              </h1>
+            <div className="mx-auto flex w-full max-w-md items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Image src="/images/logo1.png" alt="Logo" width={32} height={32} className="h-8 w-auto object-contain drop-shadow-sm" />
+                <h1 className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+                  BagiStruk
+                </h1>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>
+                  Halo,
+                </p>
+                <p className="text-sm font-bold" style={{ color: "var(--primary)" }}>
+                  @{username}
+                </p>
+              </div>
             </div>
           </header>
 
@@ -161,74 +170,59 @@ export default function DashboardShell({
             </div>
           </main>
 
-          {/* Floating Scan Button */}
-          <div className="fixed bottom-[76px] left-1/2 z-50 -translate-x-1/2">
-            <button
-              onClick={() => setShowScanMenu(!showScanMenu)}
-              className="flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition-all duration-200 active:scale-90"
-              style={{
-                background: "linear-gradient(135deg, #109981, #059669)",
-                boxShadow: "0 6px 20px rgba(16, 153, 129, 0.45)",
-              }}
-              aria-label="Scan Struk"
-            >
-              <ScanLine size={24} strokeWidth={2.2} />
-            </button>
-
-            {/* Scan Menu Popup */}
-            {showScanMenu && (
-              <>
-                {/* Backdrop */}
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowScanMenu(false)}
-                />
-                {/* Menu */}
-                <div
-                  className="absolute bottom-16 left-1/2 z-50 -translate-x-1/2 flex flex-col gap-2 rounded-2xl p-3 animate-scale-in"
-                  style={{
-                    background: "var(--surface)",
-                    boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
-                    border: "1px solid var(--border-light)",
-                    minWidth: "180px",
+          {/* Scan Menu Popup (rendered conditionally above navbar) */}
+          {showScanMenu && (
+            <div className="fixed bottom-[76px] left-1/2 z-50 -translate-x-1/2">
+              {/* Backdrop */}
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowScanMenu(false)}
+              />
+              {/* Menu */}
+              <div
+                className="absolute bottom-4 left-1/2 z-50 -translate-x-1/2 flex flex-col gap-2 rounded-2xl p-3 animate-scale-in"
+                style={{
+                  background: "var(--surface)",
+                  boxShadow: "0 10px 40px rgba(0,0,0,0.15)",
+                  border: "1px solid var(--border-light)",
+                  minWidth: "180px",
+                }}
+              >
+                <button
+                  onClick={() => {
+                    cameraInputRef.current?.click();
                   }}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ color: "var(--text-primary)" }}
                 >
-                  <button
-                    onClick={() => {
-                      cameraInputRef.current?.click();
-                    }}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    <Camera size={18} style={{ color: "var(--primary)" }} />
-                    Ambil Foto
-                  </button>
-                  <button
-                    onClick={() => {
-                      galleryInputRef.current?.click();
-                    }}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
-                    style={{ color: "var(--text-primary)" }}
-                  >
-                    <ImageIcon size={18} style={{ color: "var(--secondary)" }} />
-                    Pilih dari Galeri
-                  </button>
-                  <div className="h-px my-1" style={{ background: "var(--border-light)" }} />
-                  <button
-                    onClick={() => {
-                      setShowScanMenu(false);
-                      initManualEntry();
-                    }}
-                    className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
-                    style={{ color: "var(--text-secondary)" }}
-                  >
-                    <span className="text-base">✍️</span>
-                    Input Manual
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                  <Camera size={18} style={{ color: "var(--primary)" }} />
+                  Ambil Foto
+                </button>
+                <button
+                  onClick={() => {
+                    galleryInputRef.current?.click();
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ color: "var(--text-primary)" }}
+                >
+                  <ImageIcon size={18} style={{ color: "var(--secondary)" }} />
+                  Pilih dari Galeri
+                </button>
+                <div className="h-px my-1" style={{ background: "var(--border-light)" }} />
+                <button
+                  onClick={() => {
+                    setShowScanMenu(false);
+                    initManualEntry();
+                  }}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all hover:bg-gray-50 active:scale-95"
+                  style={{ color: "var(--text-secondary)" }}
+                >
+                  <span className="text-base">✍️</span>
+                  Input Manual
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Hidden File Inputs */}
           <input
@@ -259,12 +253,33 @@ export default function DashboardShell({
           >
             <div className="mx-auto flex max-w-md items-center justify-around px-2 py-2">
               {TAB_CONFIG.map((tab) => {
+                if (tab.id === "scan") {
+                  return (
+                    <div key="scan" className="relative -top-5 flex flex-col items-center">
+                      <button
+                        onClick={() => setShowScanMenu(!showScanMenu)}
+                        className="flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition-all duration-200 active:scale-90"
+                        style={{
+                          background: "linear-gradient(135deg, #109981, #059669)",
+                          boxShadow: "0 6px 20px rgba(16, 153, 129, 0.45)",
+                        }}
+                        aria-label="Scan Struk"
+                      >
+                        <ScanLine size={24} strokeWidth={2.2} />
+                      </button>
+                    </div>
+                  );
+                }
+
                 const isActive = activeTab === tab.id;
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setActiveTab(tab.id as DashboardTab);
+                      setShowScanMenu(false);
+                    }}
                     className="flex flex-1 flex-col items-center gap-0.5 py-1 transition-all duration-200"
                     style={{
                       color: isActive ? "var(--primary)" : "var(--text-muted)",

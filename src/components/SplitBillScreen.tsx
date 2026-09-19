@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   ArrowLeft,
   Plus,
@@ -13,8 +13,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
-import { calculateSplit } from "@/lib/split-math";
+import { calculateSplit, type RoundingMode } from "@/lib/split-math";
 import { saveTransactionData } from "@/app/actions/finance";
+import { createClient } from "@/lib/supabase/client";
 
 /** Formats a number as Indonesian Rupiah */
 function formatRupiah(value: number): string {
@@ -54,6 +55,28 @@ export default function SplitBillScreen() {
   const [newItemQty, setNewItemQty] = useState(1);
   const [newItemPrice, setNewItemPrice] = useState("");
 
+  // States for rounding & auto-suggest
+  const [roundingMode, setRoundingMode] = useState<RoundingMode>("exact");
+  const [dbContacts, setDbContacts] = useState<{ id: string; name: string }[]>([]);
+  const [showSuggest, setShowSuggest] = useState(false);
+
+  // Fetch contacts for auto-suggest
+  useEffect(() => {
+    async function fetchContacts() {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from("contacts")
+        .select("id, name")
+        .eq("user_id", user.id);
+        
+      if (data) setDbContacts(data);
+    }
+    fetchContacts();
+  }, []);
+
   const handleBack = useCallback(() => {
     setView("result");
   }, [setView]);
@@ -68,8 +91,8 @@ export default function SplitBillScreen() {
 
   const splitResults = useMemo(() => {
     if (!receiptData) return [];
-    return calculateSplit(splitItems, receiptData.financials, participants);
-  }, [receiptData, splitItems, participants]);
+    return calculateSplit(splitItems, receiptData.financials, participants, roundingMode);
+  }, [receiptData, splitItems, participants, roundingMode]);
 
   const showFeedback = useCallback((message: string, type: "success" | "error" = "success") => {
     setToastMessage(message);
@@ -223,22 +246,61 @@ export default function SplitBillScreen() {
             </div>
             
             <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={newParticipantName}
-                onChange={(e) => setNewParticipantName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddParticipant()}
-                placeholder="Masukkan nama..."
-                className="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none transition-all focus:ring-2"
-                style={{
-                  background: "var(--surface)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-primary)",
-                  "--tw-ring-color": "var(--primary-light)",
-                } as any}
-              />
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={newParticipantName}
+                  onChange={(e) => {
+                    setNewParticipantName(e.target.value);
+                    setShowSuggest(e.target.value.trim().length > 0);
+                  }}
+                  onFocus={() => setShowSuggest(newParticipantName.trim().length > 0)}
+                  onBlur={() => setTimeout(() => setShowSuggest(false), 200)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setShowSuggest(false);
+                      handleAddParticipant();
+                    }
+                  }}
+                  placeholder="Masukkan nama..."
+                  className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-all focus:ring-2"
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    color: "var(--text-primary)",
+                    "--tw-ring-color": "var(--primary-light)",
+                  } as any}
+                />
+                
+                {/* Auto-suggest dropdown */}
+                {showSuggest && dbContacts.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 rounded-xl shadow-lg border max-h-40 overflow-y-auto animate-fade-in"
+                       style={{ background: "var(--surface)", borderColor: "var(--border-light)" }}>
+                    {dbContacts
+                      .filter(c => c.name.toLowerCase().includes(newParticipantName.toLowerCase()) && !participants.some(p => p.name.toLowerCase() === c.name.toLowerCase()))
+                      .map(c => (
+                        <div 
+                          key={c.id} 
+                          className="px-4 py-2 text-sm cursor-pointer transition-colors"
+                          style={{ color: "var(--text-primary)" }}
+                          onMouseDown={(e) => {
+                            e.preventDefault(); // Prevent blur
+                            addParticipant(c.name);
+                            setNewParticipantName("");
+                            setShowSuggest(false);
+                          }}
+                        >
+                          {c.name}
+                        </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
-                onClick={handleAddParticipant}
+                onClick={() => {
+                  setShowSuggest(false);
+                  handleAddParticipant();
+                }}
                 disabled={!newParticipantName.trim()}
                 className="flex h-[42px] w-[42px] items-center justify-center rounded-xl text-white transition-all active:scale-95 disabled:opacity-50"
                 style={{
@@ -279,6 +341,57 @@ export default function SplitBillScreen() {
                 Belum ada teman yang ditambahkan.
               </p>
             )}
+          </section>
+
+          {/* Opsi Pembulatan */}
+          <section>
+            <div className="mb-2 flex items-center gap-2">
+              <h2 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                Opsi Pembulatan
+              </h2>
+            </div>
+            <div className="flex rounded-xl p-1 overflow-x-auto scrollbar-hide" style={{ background: "var(--border-light)" }}>
+              <button 
+                onClick={() => setRoundingMode("exact")} 
+                className={`flex-1 shrink-0 rounded-lg py-2 px-2 text-[11px] font-semibold transition-all ${roundingMode === "exact" ? "shadow-sm" : ""}`}
+                style={{ 
+                  background: roundingMode === "exact" ? "var(--surface)" : "transparent",
+                  color: roundingMode === "exact" ? "var(--primary)" : "var(--text-muted)"
+                }}
+              >
+                Persis
+              </button>
+              <button 
+                onClick={() => setRoundingMode("nearest_100")} 
+                className={`flex-1 shrink-0 rounded-lg py-2 px-2 text-[11px] font-semibold transition-all ${roundingMode === "nearest_100" ? "shadow-sm" : ""}`}
+                style={{ 
+                  background: roundingMode === "nearest_100" ? "var(--surface)" : "transparent",
+                  color: roundingMode === "nearest_100" ? "var(--primary)" : "var(--text-muted)"
+                }}
+              >
+                Rp100
+              </button>
+              <button 
+                onClick={() => setRoundingMode("nearest_500")} 
+                className={`flex-1 shrink-0 rounded-lg py-2 px-2 text-[11px] font-semibold transition-all ${roundingMode === "nearest_500" ? "shadow-sm" : ""}`}
+                style={{ 
+                  background: roundingMode === "nearest_500" ? "var(--surface)" : "transparent",
+                  color: roundingMode === "nearest_500" ? "var(--primary)" : "var(--text-muted)"
+                }}
+              >
+                Rp500
+              </button>
+              <button 
+                onClick={() => setRoundingMode("nearest_1000")} 
+                className={`flex-1 shrink-0 rounded-lg py-2 px-2 text-[11px] font-semibold transition-all ${roundingMode === "nearest_1000" ? "shadow-sm" : ""}`}
+                style={{ 
+                  background: roundingMode === "nearest_1000" ? "var(--surface)" : "transparent",
+                  color: roundingMode === "nearest_1000" ? "var(--primary)" : "var(--text-muted)"
+                }}
+              >
+                Rp1000
+              </button>
+            </div>
           </section>
 
           {/* Bagian 2: Rincian Item & Penugasan */}

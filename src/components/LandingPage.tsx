@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 
 export default function LandingPage() {
   const { setBottomSheetOpen, isCompressing, initManualEntry } = useAppStore();
@@ -34,13 +35,13 @@ export default function LandingPage() {
         {/* Logo & Brand */}
         <div className="mb-10 flex flex-col items-center animate-fade-in">
           <div
-            className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl"
+            className="mb-6 flex h-24 w-24 items-center justify-center rounded-3xl"
             style={{
-              background: "linear-gradient(135deg, var(--primary), var(--primary-light))",
-              boxShadow: "0 8px 24px rgba(16, 153, 129, 0.35)",
+              background: "var(--surface)",
+              boxShadow: "0 8px 24px rgba(16, 153, 129, 0.25)",
             }}
           >
-            <Receipt size={38} color="white" strokeWidth={1.8} />
+            <Image src="/images/logo1.png" alt="BagiStruk Logo" width={64} height={64} className="h-16 w-16 object-contain" />
           </div>
           <h1
             className="mb-2 text-center text-2xl font-bold tracking-tight"
@@ -190,14 +191,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* Footer & TCC Logos */}
       <footer
-        className="px-6 py-6 text-center"
+        className="px-6 py-10 flex flex-col items-center gap-6"
         style={{ background: "var(--surface)" }}
       >
         <p className="text-xs" style={{ color: "var(--text-muted)" }}>
           Simple. Smart. Split. ✨
         </p>
+        <div className="flex items-center justify-center gap-6 opacity-60 grayscale hover:grayscale-0 transition-all duration-300">
+          <Image src="/images/logo2.png" alt="TCC Logo 1" width={40} height={40} className="h-10 w-auto object-contain" />
+          <Image src="/images/logo3.png" alt="TCC Logo 2" width={40} height={40} className="h-10 w-auto object-contain" />
+          <Image src="/images/logo4.png" alt="TCC Logo 3" width={40} height={40} className="h-10 w-auto object-contain" />
+        </div>
       </footer>
     </div>
   );

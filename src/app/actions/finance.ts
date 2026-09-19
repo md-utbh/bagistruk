@@ -59,7 +59,7 @@ export async function saveTransactionData(
       return { success: false, error: "Gagal menyimpan data transaksi." };
     }
 
-    // 3. Simpan Hutang (Debts) jika Mode Patungan
+    // 3. Simpan Hutang (Debts) & Kontak Baru jika Mode Patungan
     if (splitMode === "split" && splitResults.length > 0) {
       // Filter out 'Saya (Kamu)' (the user who paid)
       const debtors = splitResults.filter(
@@ -67,6 +67,27 @@ export async function saveTransactionData(
       );
 
       if (debtors.length > 0) {
+        // Auto-save new contacts
+        const { data: existingContacts } = await supabase
+          .from("contacts")
+          .select("name")
+          .eq("user_id", user.id);
+          
+        const existingNames = new Set(existingContacts?.map((c: any) => c.name.toLowerCase()) || []);
+        const newContactsToInsert = debtors
+          .filter(d => !existingNames.has(d.name.toLowerCase()))
+          .map(d => ({
+            user_id: user.id,
+            name: d.name,
+            phone_number: null
+          }));
+          
+        if (newContactsToInsert.length > 0) {
+          // Fire and forget contact insert
+          await supabase.from("contacts").insert(newContactsToInsert);
+        }
+
+        // Insert Debts
         const debtsToInsert = debtors.map((debtor) => ({
           user_id: user.id,
           debtor_name: debtor.name,

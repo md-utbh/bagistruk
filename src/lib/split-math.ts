@@ -1,5 +1,7 @@
 import type { ReceiptFinancials, SplitItem, Participant, SplitResult } from "./types";
 
+export type RoundingMode = "exact" | "nearest_100" | "nearest_500" | "nearest_1000";
+
 /**
  * Calculates the strict deterministic split of a receipt among participants.
  *
@@ -21,7 +23,8 @@ import type { ReceiptFinancials, SplitItem, Participant, SplitResult } from "./t
 export function calculateSplit(
   items: SplitItem[],
   financials: ReceiptFinancials,
-  participants: Participant[]
+  participants: Participant[],
+  roundingMode: RoundingMode = "exact"
 ): SplitResult[] {
   // If no participants, we can't split
   if (participants.length === 0) {
@@ -90,8 +93,19 @@ export function calculateSplit(
     const exactTotal =
       pResult.grossSubtotal - pResult.discount + pResult.tax + pResult.service_fee;
 
-    // 6. Reconciliation: Floor the total
-    pResult.total = Math.floor(exactTotal);
+    // 6. Reconciliation: Apply Rounding Mode
+    let roundedTotal = exactTotal;
+    if (roundingMode === "exact") {
+      roundedTotal = Math.floor(exactTotal);
+    } else if (roundingMode === "nearest_100") {
+      roundedTotal = Math.round(exactTotal / 100) * 100;
+    } else if (roundingMode === "nearest_500") {
+      roundedTotal = Math.round(exactTotal / 500) * 500;
+    } else if (roundingMode === "nearest_1000") {
+      roundedTotal = Math.round(exactTotal / 1000) * 1000;
+    }
+
+    pResult.total = roundedTotal;
     totalFlooredSum += pResult.total;
 
     finalResults.push({
