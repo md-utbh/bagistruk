@@ -50,6 +50,7 @@ interface AppState {
   updateSplitItem: (id: string, updates: Partial<Omit<SplitItem, "id" | "assignees">>) => void;
   
   resetToLanding: () => void;
+  resetToDashboard: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -228,6 +229,20 @@ export const useAppStore = create<AppState>((set) => ({
   }),
 
   resetToLanding: () =>
+    set({
+      currentView: "landing",
+      compressedImage: null,
+      isCompressing: false,
+      isProcessing: false,
+      error: null,
+      isBottomSheetOpen: false,
+      receiptData: null,
+      splitMode: null,
+      participants: [],
+      splitItems: [],
+    }),
+
+  resetToDashboard: () =>
     set({
       currentView: "landing",
       compressedImage: null,

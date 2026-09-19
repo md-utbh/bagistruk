@@ -1,28 +1,18 @@
-"use client";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import HomeClient from "./HomeClient";
 
-import { useAppStore } from "@/store/app-store";
-import LandingPage from "@/components/LandingPage";
-import PreviewScreen from "@/components/PreviewScreen";
-import ResultScreen from "@/components/ResultScreen";
-import SplitBillScreen from "@/components/SplitBillScreen";
-import BottomSheet from "@/components/BottomSheet";
-import LoadingOverlay from "@/components/LoadingOverlay";
-import ErrorToast from "@/components/ErrorToast";
+/**
+ * Root page: if user is already logged in, redirect to dashboard.
+ * Otherwise, show the landing page with scan flow.
+ */
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-export default function Home() {
-  const { currentView, isCompressing } = useAppStore();
+  if (user) {
+    redirect("/dashboard");
+  }
 
-  return (
-    <div className="mx-auto w-full max-w-md">
-      <BottomSheet>
-        {currentView === "landing" && <LandingPage />}
-        {currentView === "preview" && <PreviewScreen />}
-        {currentView === "result" && <ResultScreen />}
-        {currentView === "split-bill" && <SplitBillScreen />}
-      </BottomSheet>
-
-      {isCompressing && <LoadingOverlay />}
-      <ErrorToast />
-    </div>
-  );
+  return <HomeClient />;
 }

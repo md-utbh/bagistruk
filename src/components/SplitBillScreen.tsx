@@ -44,7 +44,9 @@ export default function SplitBillScreen() {
   const [newParticipantName, setNewParticipantName] = useState("");
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("Teks disalin ke clipboard!");
+  const [toastType, setToastType] = useState<"success" | "error">("success");
   const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   
   // States for new item form
   const [isAddingItem, setIsAddingItem] = useState(false);
@@ -69,8 +71,21 @@ export default function SplitBillScreen() {
     return calculateSplit(splitItems, receiptData.financials, participants);
   }, [receiptData, splitItems, participants]);
 
+  const showFeedback = useCallback((message: string, type: "success" | "error" = "success") => {
+    setToastMessage(message);
+    setToastType(type);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 3000);
+  }, []);
+
   const handleCopyToWhatsApp = useCallback(() => {
     if (!receiptData || splitResults.length === 0) return;
+
+    // Client-side validation
+    if (splitItems.length === 0 || receiptData.financials.grand_total <= 0) {
+      showFeedback("Tidak ada item untuk disalin. Tambahkan minimal satu item.", "error");
+      return;
+    }
     
     let text = `*Tagihan ${receiptData.store_name}*\n`;
     text += `Tanggal: ${receiptData.date}\n\n`;
@@ -110,40 +125,47 @@ export default function SplitBillScreen() {
 
     copyPromise
       .then(() => {
-        setToastMessage("Teks disalin ke clipboard!");
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 3000);
+        showFeedback("Teks disalin ke clipboard!");
       })
       .catch((err) => {
         console.error("Gagal menyalin teks:", err);
-        alert("Gagal menyalin teks. Browser Anda mungkin tidak mendukung fitur ini.");
+        showFeedback("Gagal menyalin teks. Browser Anda mungkin tidak mendukung fitur ini.", "error");
       });
-  }, [receiptData, splitResults, splitMode]);
+  }, [receiptData, splitResults, splitMode, splitItems, showFeedback]);
 
   const handleSave = useCallback(async () => {
-    if (!receiptData || !splitMode) return;
+    if (!receiptData || !splitMode || isSaved) return;
+
+    // Client-side validation
+    if (splitItems.length === 0) {
+      showFeedback("Data kosong. Tambahkan minimal satu item sebelum menyimpan.", "error");
+      return;
+    }
+
+    if (receiptData.financials.grand_total <= 0) {
+      showFeedback("Total transaksi harus lebih dari Rp 0.", "error");
+      return;
+    }
     
     setIsSaving(true);
     try {
       const result = await saveTransactionData(receiptData, splitMode, splitResults);
       if (result.success) {
-        setToastMessage("Data berhasil disimpan ke database!");
-        setShowToast(true);
+        setIsSaved(true);
+        showFeedback("✅ Data berhasil disimpan!");
         setTimeout(() => {
-          setShowToast(false);
-          // Redirect to dashboard instead of just staying on the page
           window.location.href = "/dashboard";
         }, 1500);
       } else {
-        alert(result.error || "Gagal menyimpan data.");
+        showFeedback(result.error || "Gagal menyimpan data.", "error");
       }
     } catch (error) {
       console.error(error);
-      alert("Terjadi kesalahan.");
+      showFeedback("Terjadi kesalahan koneksi.", "error");
     } finally {
       setIsSaving(false);
     }
-  }, [receiptData, splitMode, splitResults]);
+  }, [receiptData, splitMode, splitResults, splitItems, isSaved, showFeedback]);
 
   if (!receiptData) return null;
 
@@ -500,16 +522,16 @@ export default function SplitBillScreen() {
 
                 <button
                   onClick={handleSave}
-                  disabled={isSaving}
+                  disabled={isSaving || isSaved}
                   className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold transition-all active:scale-[0.98] disabled:opacity-70"
                   style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--primary)",
-                    color: "var(--primary-dark)",
+                    background: isSaved ? "var(--success)" : "var(--surface)",
+                    border: isSaved ? "1px solid var(--success)" : "1px solid var(--primary)",
+                    color: isSaved ? "white" : "var(--primary-dark)",
                   }}
                 >
-                  {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                  {isSaving ? "Menyimpan..." : "Simpan ke Database"}
+                  {isSaving ? <Loader2 size={18} className="animate-spin" /> : isSaved ? <Check size={18} /> : <Save size={18} />}
+                  {isSaving ? "Menyimpan..." : isSaved ? "Tersimpan ✓" : "Simpan ke Database"}
                 </button>
               </div>
             </section>
@@ -520,8 +542,11 @@ export default function SplitBillScreen() {
 
       {/* Toast Notification */}
       {showToast && (
-        <div className="fixed bottom-10 left-1/2 z-50 -translate-x-1/2 animate-slide-up rounded-full bg-gray-800 px-5 py-2.5 text-sm text-white shadow-lg flex items-center gap-2 whitespace-nowrap">
-          <CheckCircle2 size={16} className="text-green-400" />
+        <div
+          className="fixed bottom-10 left-1/2 z-50 -translate-x-1/2 animate-slide-up rounded-full px-5 py-2.5 text-sm text-white shadow-lg flex items-center gap-2 whitespace-nowrap"
+          style={{ background: toastType === "error" ? "#dc2626" : "#1f2937" }}
+        >
+          <CheckCircle2 size={16} className={toastType === "error" ? "text-red-200" : "text-green-400"} />
           {toastMessage}
         </div>
       )}

@@ -18,6 +18,24 @@ export async function saveTransactionData(
       return { success: false, error: "Unauthorized. Harap login terlebih dahulu." };
     }
 
+    // ── Server-side Validation ──────────────────────────────────────
+    if (!receiptData || !receiptData.items || receiptData.items.length === 0) {
+      // Allow save even with 0 items if splitResults have items assigned
+      // But reject if truly empty
+      if (splitResults.length === 0 || splitResults.every((r) => r.items.length === 0)) {
+        return { success: false, error: "Data transaksi kosong. Tambahkan minimal satu item." };
+      }
+    }
+
+    if (receiptData.financials.grand_total <= 0) {
+      return { success: false, error: "Total transaksi harus lebih dari Rp 0." };
+    }
+
+    if (!receiptData.store_name || receiptData.store_name.trim() === "") {
+      return { success: false, error: "Nama toko tidak boleh kosong." };
+    }
+    // ────────────────────────────────────────────────────────────────
+
     // 1. Dapatkan tagihan milik pengguna yang login ("Saya (Kamu)" dgn id p-me)
     const myResult = splitResults.find((res) => res.participantId === "p-me");
     const myExpense = myResult ? myResult.total : 0;
@@ -106,3 +124,44 @@ export async function markDebtAsPaid(debtId: string) {
     return { success: false, error: "Terjadi kesalahan pada server." };
   }
 }
+
+export async function deleteTransaction(transactionId: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    // Delete related debts first
+    await supabase
+      .from("debts")
+      .delete()
+      .eq("transaction_id", transactionId)
+      .eq("user_id", user.id);
+
+    // Delete the transaction
+    const { error } = await supabase
+      .from("transactions")
+      .delete()
+      .eq("id", transactionId)
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Gagal menghapus transaksi:", error);
+      return { success: false, error: "Gagal menghapus transaksi." };
+    }
+
+    const { revalidatePath } = await import("next/cache");
+    revalidatePath("/dashboard");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Kesalahan server:", error);
+    return { success: false, error: "Terjadi kesalahan pada server." };
+  }
+}
+
