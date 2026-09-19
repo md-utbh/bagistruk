@@ -11,6 +11,7 @@ import {
   Copy,
   Save,
   Loader2,
+  UserCircle,
 } from "lucide-react";
 import { useAppStore } from "@/store/app-store";
 import { calculateSplit, type RoundingMode } from "@/lib/split-math";
@@ -252,9 +253,9 @@ export default function SplitBillScreen() {
                   value={newParticipantName}
                   onChange={(e) => {
                     setNewParticipantName(e.target.value);
-                    setShowSuggest(e.target.value.trim().length > 0);
+                    setShowSuggest(true);
                   }}
-                  onFocus={() => setShowSuggest(newParticipantName.trim().length > 0)}
+                  onFocus={() => setShowSuggest(true)}
                   onBlur={() => setTimeout(() => setShowSuggest(false), 200)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -262,7 +263,7 @@ export default function SplitBillScreen() {
                       handleAddParticipant();
                     }
                   }}
-                  placeholder="Masukkan nama..."
+                  placeholder="Ketik nama kontak..."
                   className="w-full rounded-xl px-4 py-2.5 text-sm outline-none transition-all focus:ring-2"
                   style={{
                     background: "var(--surface)",
@@ -272,27 +273,70 @@ export default function SplitBillScreen() {
                   } as any}
                 />
                 
-                {/* Auto-suggest dropdown */}
-                {showSuggest && dbContacts.length > 0 && (
-                  <div className="absolute z-10 w-full mt-1 rounded-xl shadow-lg border max-h-40 overflow-y-auto animate-fade-in"
+                {/* Auto-suggest dropdown (Creatable Combobox) */}
+                {showSuggest && (
+                  <div className="absolute z-40 w-full mt-2 rounded-xl shadow-xl border overflow-hidden animate-scale-in"
                        style={{ background: "var(--surface)", borderColor: "var(--border-light)" }}>
-                    {dbContacts
-                      .filter(c => c.name.toLowerCase().includes(newParticipantName.toLowerCase()) && !participants.some(p => p.name.toLowerCase() === c.name.toLowerCase()))
-                      .map(c => (
-                        <div 
-                          key={c.id} 
-                          className="px-4 py-2 text-sm cursor-pointer transition-colors"
-                          style={{ color: "var(--text-primary)" }}
-                          onMouseDown={(e) => {
-                            e.preventDefault(); // Prevent blur
-                            addParticipant(c.name);
-                            setNewParticipantName("");
-                            setShowSuggest(false);
-                          }}
-                        >
-                          {c.name}
-                        </div>
-                    ))}
+                    <div className="max-h-48 overflow-y-auto">
+                      {(() => {
+                        // 1. Filter contacts
+                        const filteredContacts = dbContacts
+                          .filter(c => !participants.some(p => p.name.toLowerCase() === c.name.toLowerCase()))
+                          .filter(c => c.name.toLowerCase().includes(newParticipantName.trim().toLowerCase()));
+
+                        // 2. Determine if we should show "Tambah baru"
+                        const isTyping = newParticipantName.trim().length > 0;
+                        const hasExactMatch = filteredContacts.some(c => c.name.toLowerCase() === newParticipantName.trim().toLowerCase());
+                        const showCreateOption = isTyping && !hasExactMatch;
+
+                        // 3. Render
+                        return (
+                          <>
+                            {filteredContacts.length === 0 && !isTyping && (
+                              <div className="px-4 py-3 text-xs text-center" style={{ color: "var(--text-muted)" }}>
+                                Tidak ada saran kontak.
+                              </div>
+                            )}
+
+                            {filteredContacts.map((c, idx) => (
+                              <div 
+                                key={c.id} 
+                                className="px-4 py-3 text-sm cursor-pointer transition-colors flex items-center gap-3"
+                                style={{ 
+                                  color: "var(--text-primary)", 
+                                  borderBottom: idx === filteredContacts.length - 1 && !showCreateOption ? "none" : "1px solid var(--border-light)"
+                                }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault(); // Prevent blur
+                                  addParticipant(c.name);
+                                  setNewParticipantName("");
+                                  setShowSuggest(false);
+                                }}
+                              >
+                                <UserCircle size={16} style={{ color: "var(--text-muted)" }} />
+                                {c.name}
+                              </div>
+                            ))}
+
+                            {showCreateOption && (
+                              <div 
+                                className="px-4 py-3 text-sm cursor-pointer transition-colors flex items-center gap-3 font-medium"
+                                style={{ color: "var(--primary)", background: "var(--accent)" }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  addParticipant(newParticipantName.trim());
+                                  setNewParticipantName("");
+                                  setShowSuggest(false);
+                                }}
+                              >
+                                <Plus size={16} strokeWidth={2.5} />
+                                Tambah &quot;{newParticipantName.trim()}&quot;
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
                   </div>
                 )}
               </div>
